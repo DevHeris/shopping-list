@@ -64,7 +64,6 @@ function removeItem(event) {
 // PHASE 3 === Clear all items with 'clear' button
 
 function clearItems(event) {
-  //    itemList.innerHTML='';
   if (confirm("Are you sure you want to clear all?")) {
     while (itemList.firstChild) {
       itemList.removeChild(itemList.firstChild);
