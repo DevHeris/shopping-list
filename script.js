@@ -1,7 +1,10 @@
 const itemForm = document.getElementById('item-form');
 const itemInput = document.getElementById('item-input');
 const itemList = document.getElementById('item-list');
+const clearBtn = document.getElementById('clear');
 
+
+// PHASE 1 === Add items to list via form
 function addItem(event) {
     event.preventDefault(); //STOPS THE FORM FROM SUBMITTING TO THE PAGE
 
@@ -41,5 +44,26 @@ function createIcon(classes) {
 };
 
 
+// PHASE 2 === Remove items from list by clicking by clicking the 'x' button
+function removeItem(event) {
+    if (event.target.classList[1] === "fa-xmark") {
+      event.target.parentElement.parentElement.remove();  
+    };  
+};
+
+// PHASE 3 === Clear all items with 'clear' button
+
+function clearItems (event) {
+//    itemList.innerHTML='';
+while (itemList.firstChild) {
+    itemList.removeChild(itemList.firstChild)
+};
+};
+
+
+
 // EVENT LISTENERS
 itemForm.addEventListener('submit', addItem);  
+itemList.addEventListener('click', removeItem);  
+clearBtn.addEventListener('click', clearItems);  
+
