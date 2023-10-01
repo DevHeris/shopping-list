@@ -2,7 +2,7 @@ const itemForm = document.getElementById("item-form");
 const itemInput = document.getElementById("item-input");
 const itemList = document.getElementById("item-list");
 const clearBtn = document.getElementById("clear");
-const itemFilter = document.querySelector("#filter");
+const itemFilter = document.getElementById("filter");
 
 // PHASE 1 === Add items to list via form
 function addItem(event) {
@@ -87,9 +87,25 @@ function checkUI() {
   }
 }
 
+// PHASE 5 === The Filter Input functionality
+function filterItems(event) {
+  const text = event.target.value.toLowerCase(); //Input text value
+  const items = itemList.querySelectorAll("li"); //Nodelist containing all the list items
+
+  items.forEach((item) => {
+    const itemName = item.firstChild.textContent.toLowerCase(); //Name of the item to lowercase
+    if (itemName.indexOf(text) != -1) {
+      // I.e as long as the substring(value of text) is found in the itemName then the statement is true
+      item.style.display = "flex"; //not block because we used flex in the css styling
+    } else {
+      item.style.display = "none";
+    }
+  });
+}
+
 // EVENT LISTENERS
 itemForm.addEventListener("submit", addItem);
 itemList.addEventListener("click", removeItem);
 clearBtn.addEventListener("click", clearItems);
-
+itemFilter.addEventListener("input", filterItems);
 checkUI(); //ONLY RUNS WHEN THE PAGE LOADS //Note that this can also be called resetUI
