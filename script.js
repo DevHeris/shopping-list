@@ -38,7 +38,16 @@ function onAddItemSubmit(event) {
 
     // Remove from the DOM
     itemToEdit.remove();
+
+    isEditMode = false;
+  } else {
+    if (checkIfItemExists(newItem)) {
+      alert(`${newItem} already exists`);
+      itemInput.value = "";
+      return;
+    }
   }
+
   // Create item DOM element
   addItemToDOM(newItem);
 
@@ -112,6 +121,12 @@ function onClickItem(event) {
   } else if (event.target.tagName === "LI") {
     setItemToEdit(event.target);
   }
+}
+
+function checkIfItemExists(item) {
+  const itemsFromStorage = getItemsFromStorage();
+
+  return itemsFromStorage.includes(item);
 }
 
 function setItemToEdit(item) {
