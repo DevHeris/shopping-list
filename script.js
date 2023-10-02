@@ -4,79 +4,152 @@ const itemList = document.getElementById("item-list");
 const clearBtn = document.getElementById("clear");
 const itemFilter = document.getElementById("filter");
 
-// PHASE 1 === Add items to list via form
-function addItem(event) {
-  event.preventDefault(); //STOPS THE FORM FROM SUBMITTING TO THE PAGE
+function displayItems() {
+  const itemsFromStorage = getItemsFromStorage();
+
+  itemsFromStorage.forEach((item) => {
+    addItemToDOM(item);
+  });
+
+  checkUI();
+}
+
+function onAddItemSubmit(event) {
+  event.preventDefault();
 
   const newItem = itemInput.value;
 
-  // VALIDATE INPUT
+  //   Validate Input
   if (newItem === "") {
     alert("Please add an item");
+
     return;
   }
 
-  //CREATE LIST ITEM
-  const li = document.createElement("li");
-  li.textContent = newItem;
+  // Create item DOM element
+  addItemToDOM(newItem);
 
-  const button = createButton("remove-item btn-link text-red"); //Function calling
+  // Add item to local storage
+  addItemToStorage(newItem);
+
+  checkUI();
+
+  itemInput.value = "";
+}
+
+function addItemToDOM(item) {
+  //   Create list item
+  const li = document.createElement("li");
+
+  li.textContent = item;
+
+  const button = createButton("remove-item btn-link text-red");
+
   li.appendChild(button);
 
-  // ADD LIST ITEM TO THE DOM
+  // Add li to the DOM
   itemList.appendChild(li);
-
-  checkUI(); //This function is called again to check if the item.length===0 after an item has been added to the dom
-
-  // CLEAR THE INPUT AFTER ADDING
-  itemInput.value = "";
 }
 
 function createButton(classes) {
   const button = document.createElement("button");
+
   button.className = classes;
-  const icon = createIcon("fa-solid fa-xmark"); //Function calling
+
+  const icon = createIcon("fa-solid fa-xmark");
+
   button.appendChild(icon);
-  return button; //I.e return the value of button to the caller(addItem) function
+
+  return button;
 }
 
 function createIcon(classes) {
   const icon = document.createElement("i");
+
   icon.className = classes;
-  return icon; //I.e return the value of icon to the caller(createButton) function
+
+  return icon;
 }
 
-// PHASE 2 === Remove items from list by clicking by clicking the 'x' button
-function removeItem(event) {
-  if (event.target.classList[1] === "fa-xmark") {
-    if (
-      confirm(
-        `Are you sure you want to remove ${event.target.parentElement.parentElement.textContent}?`
-      )
-    ) {
-      event.target.parentElement.parentElement.remove();
+function addItemToStorage(item) {
+  let itemsFromStorage = getItemsFromStorage(); //DRY principle(Don't repeat yourself)
 
-      checkUI(); //Called again to check if there is no list item anymore so it can remove the filter and the clear button
-    }
+  // Add new item to array
+  itemsFromStorage.push(item);
+
+  // Convert to JSON String and set to local storage
+  localStorage.setItem("items", JSON.stringify(itemsFromStorage));
+}
+
+function getItemsFromStorage() {
+  let itemsFromStorage;
+
+  if (localStorage.getItem("items") === null) {
+    itemsFromStorage = [];
+  } else {
+    itemsFromStorage = JSON.parse(localStorage.getItem("items"));
+  }
+
+  return itemsFromStorage;
+}
+
+function onClickItem(event) {
+  if (event.target.className === "fa-solid fa-xmark") {
+    removeItem(event.target.parentElement.parentElement);
   }
 }
 
-// PHASE 3 === Clear all items with 'clear' button
+function removeItem(item) {
+  if (confirm(`Are you sure you want to remove ${item.textContent}`)) {
+    // Remove item from DOM
+    item.remove();
+
+    // Remove item from storage
+    removeItemFromStorage(item.textContent);
+
+    checkUI();
+  }
+}
+function removeItemFromStorage(item) {
+  let itemsFromStorage = getItemsFromStorage();
+
+  // FIlter out item to be removed from storage
+  itemsFromStorage = itemsFromStorage.filter((i) => i !== item); //This gives an array of the remaining items
+
+  // Re-set to localStorage
+  localStorage.setItem("items", JSON.stringify(itemsFromStorage));
+}
 
 function clearItems(event) {
-  if (confirm("Are you sure you want to clear all?")) {
+  if (confirm("Are you sure you want to clear all items?")) {
     while (itemList.firstChild) {
       itemList.removeChild(itemList.firstChild);
     }
   }
 
-  checkUI(); //Still called again for a similar reason
+  // Clear from localStorage
+  localStorage.removeItem("items");
+
+  checkUI();
 }
 
-// PHASE 4 === Removing the Filter input and the clear button whenever there is no list item currently
+function filterItems(event) {
+  const text = event.target.value.toLowerCase();
+  const items = itemList.querySelectorAll("li");
+
+  items.forEach((item) => {
+    const itemName = item.textContent.toLowerCase();
+
+    if (itemName.indexOf(text) !== -1) {
+      item.style.display = "flex";
+    } else {
+      item.style.display = "none";
+    }
+  });
+}
 
 function checkUI() {
-  const items = itemList.querySelectorAll("li"); //CREATING THIS VARIABLE IN THIS SCOPE AND NOT THE GLOBAL SCOPE IS VERY IMPORTANT
+  const items = itemList.querySelectorAll("li");
   if (items.length === 0) {
     clearBtn.style.display = "none";
     itemFilter.style.display = "none";
@@ -86,25 +159,16 @@ function checkUI() {
   }
 }
 
-// PHASE 5 === The Filter Input functionality
-function filterItems(event) {
-  const text = event.target.value.toLowerCase(); //Input text value
-  const items = itemList.querySelectorAll("li"); //Nodelist containing all the list items
+// Initialize app
+function init() {
+  // Event Listeners
+  itemForm.addEventListener("submit", onAddItemSubmit);
+  itemList.addEventListener("click", onClickItem);
+  clearBtn.addEventListener("click", clearItems);
+  itemFilter.addEventListener("input", filterItems);
+  document.addEventListener("DOMContentLoaded", displayItems);
 
-  items.forEach((item) => {
-    const itemName = item.firstChild.textContent.toLowerCase(); //Name of the item to lowercase
-    if (itemName.indexOf(text) != -1) {
-      // I.e as long as the substring(value of text) is found in the itemName then the statement is true
-      item.style.display = "flex"; //not block because we used flex in the css styling
-    } else {
-      item.style.display = "none";
-    }
-  });
+  checkUI();
 }
 
-// EVENT LISTENERS
-itemForm.addEventListener("submit", addItem);
-itemList.addEventListener("click", removeItem);
-clearBtn.addEventListener("click", clearItems);
-itemFilter.addEventListener("input", filterItems);
-checkUI(); //ONLY RUNS WHEN THE PAGE LOADS //Note that this can also be called resetUI
+init();
